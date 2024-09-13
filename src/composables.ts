@@ -8,10 +8,10 @@ import {
     WalletWithRequiredFeatures,
     SuiSignPersonalMessageInput,
     SuiSignPersonalMessageOutput,
-    SuiSignTransactionBlockInput,
-    SuiSignTransactionBlockOutput,
-    SuiSignAndExecuteTransactionBlockInput,
-    SuiSignAndExecuteTransactionBlockOutput
+    SuiSignTransactionInput,
+    SignedTransaction,
+    SuiSignAndExecuteTransactionInput,
+    SuiSignAndExecuteTransactionOutput
 } from '@mysten/wallet-standard'
 import { ZKSEND_WALLET_NAME } from '@mysten/zksend'
 import { createGlobalState, useStorage } from '@vueuse/core'
@@ -19,8 +19,8 @@ import { PartialBy } from './utilityTypes'
 
 
 type SignPersonalMessageArgs = PartialBy<SuiSignPersonalMessageInput, 'account'>
-type SignTransactionBlockArgs = PartialBy<SuiSignTransactionBlockInput, 'account' | 'chain'>
-type SignAndExecuteTransactionBlockArgs = PartialBy<SuiSignAndExecuteTransactionBlockInput, 'account' | 'chain'>
+type SignTransactionArgs = PartialBy<SuiSignTransactionInput, 'account' | 'chain'>
+type SignAndExecuteTransactionArgs = PartialBy<SuiSignAndExecuteTransactionInput, 'account' | 'chain'>
 
 const SUI_WALLET_NAME = 'Sui Wallet'
 
@@ -190,8 +190,8 @@ export const useSignPersonalMessage = () => {
 
 export const useSignTransactionBlock = () => {
 
-    const signTransactionBlock: (args: SignTransactionBlockArgs) => Promise<SuiSignTransactionBlockOutput> =
-        ({ transactionBlock, account, chain }) => {
+    const signTransactionBlock: (args: SignTransactionArgs) => Promise<SignedTransaction> =
+        ({ transaction, account, chain }) => {
             if (!globalState.currentWallet) {
                 throw new Error('No wallet is connected.')
             }
@@ -201,13 +201,13 @@ export const useSignTransactionBlock = () => {
                 throw new Error('No wallet account is selected to sign the personal message with.')
             }
 
-            const feature = globalState.currentWallet.features['sui:signTransactionBlock']
+            const feature = globalState.currentWallet.features['sui:signTransaction']
             if (!feature) {
                 throw new Error("This wallet doesn't support the `SignTransactionBlock` feature.")
             }
 
-            return feature.signTransactionBlock({
-                transactionBlock,
+            return feature.signTransaction({
+                transaction,
                 account: signerAccount,
                 chain: chain ?? signerAccount.chains[0]
             })
@@ -218,8 +218,8 @@ export const useSignTransactionBlock = () => {
 
 export const useSignAndExecuteTransactionBlock = () => {
 
-    const signAndExecuteTransactionBlock: (args: SignAndExecuteTransactionBlockArgs) => Promise<SuiSignAndExecuteTransactionBlockOutput> =
-        ({ requestType, options, transactionBlock, account, chain }) => {
+    const signAndExecuteTransaction: (args: SignAndExecuteTransactionArgs) => Promise<SuiSignAndExecuteTransactionOutput> =
+        ({ transaction, account, chain }) => {
             if (!globalState.currentWallet) {
                 throw new Error('No wallet is connected.')
             }
@@ -229,19 +229,17 @@ export const useSignAndExecuteTransactionBlock = () => {
                 throw new Error('No wallet account is selected to sign the personal message with.')
             }
 
-            const feature = globalState.currentWallet.features['sui:signAndExecuteTransactionBlock']
+            const feature = globalState.currentWallet.features['sui:signAndExecuteTransaction']
             if (!feature) {
                 throw new Error("This wallet doesn't support the `signAndExecuteTransactionBlock` feature.")
             }
 
-            return feature.signAndExecuteTransactionBlock({
-                transactionBlock,
+            return feature.signAndExecuteTransaction({
+                transaction,
                 account: signerAccount,
                 chain: chain ?? signerAccount.chains[0],
-                requestType,
-                options,
             })
         }
 
-    return { signAndExecuteTransactionBlock }
+    return { signAndExecuteTransaction }
 }

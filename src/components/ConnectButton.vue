@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue'
-import { formatAddress } from '@mysten/sui.js/utils'
+import { formatAddress } from '@mysten/sui/utils'
 import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue'
 import { ChevronDownIcon, CheckCircleIcon } from '@heroicons/vue/20/solid'
 import ConnectDialog from './ConnectDialog.vue'

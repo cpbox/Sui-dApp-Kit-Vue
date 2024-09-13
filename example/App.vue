@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue'
-import { getFullnodeUrl, SuiClient } from '@mysten/sui.js/client'
+import { getFullnodeUrl, SuiClient } from '@mysten/sui/client'
 import { useQuery } from '@tanstack/vue-query'
 import {
     ConnectButton,
-    TransactionBlock,
+    Transaction,
     useCurrentWallet,
     useCurrentAccount,
     useSignPersonalMessage,
@@ -41,7 +41,7 @@ const signMsg = async () => {
 
 const signEmptyTransactionBlock = async () => {
     const { signature } = await signTransactionBlock({
-        transactionBlock: new TransactionBlock(),
+        transactionBlock: new Transaction(),
         chain: 'sui:devnet'
     })
     signatures[1] = signature
@@ -49,7 +49,7 @@ const signEmptyTransactionBlock = async () => {
 
 const signAndExecuteEmptyTransactionBlock = async () => {
     const { digest } = await signAndExecuteTransactionBlock({
-        transactionBlock: new TransactionBlock(),
+        transaction: new Transaction(),
         chain: 'sui:devnet'
     })
     signatures[2] = digest
