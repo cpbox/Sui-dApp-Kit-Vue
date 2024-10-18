@@ -11,7 +11,8 @@ import {
     SuiSignTransactionInput,
     SignedTransaction,
     SuiSignAndExecuteTransactionInput,
-    SuiSignAndExecuteTransactionOutput
+    SuiSignAndExecuteTransactionOutput,
+    SuiSignAndExecuteTransactionBlockOutput
 } from '@mysten/wallet-standard'
 import { ZKSEND_WALLET_NAME } from '@mysten/zksend'
 import { createGlobalState, useStorage } from '@vueuse/core'
@@ -218,28 +219,36 @@ export const useSignTransactionBlock = () => {
 
 export const useSignAndExecuteTransactionBlock = () => {
 
-    const signAndExecuteTransaction: (args: SignAndExecuteTransactionArgs) => Promise<SuiSignAndExecuteTransactionOutput> =
-        ({ transaction, account, chain }) => {
-            if (!globalState.currentWallet) {
-                throw new Error('No wallet is connected.')
+        const signAndExecuteTransaction: (args: SignAndExecuteTransactionArgs) => Promise<SuiSignAndExecuteTransactionOutput | SuiSignAndExecuteTransactionBlockOutput> =
+            ({ transaction, account, chain }) => {
+                if (!globalState.currentWallet) {
+                    throw new Error('No wallet is connected.')
+                }
+    
+                const signerAccount = account ?? globalState.currentAccount.value
+                if (!signerAccount) {
+                    throw new Error('No wallet account is selected to sign the personal message with.')
+                }
+    
+                const feature = globalState.currentWallet.features['sui:signAndExecuteTransaction']
+                if (!feature) {
+                    const feature2 = globalState.currentWallet.features['sui:signAndExecuteTransactionBlock']
+                    if (!feature2) {
+                        throw new Error("This wallet doesn't support the `signAndExecuteTransactionBlock` feature.")
+                    }
+                    return feature2.signAndExecuteTransactionBlock({
+                        transactionBlock: transaction,
+                        account: signerAccount,
+                        chain: chain ?? signerAccount.chains[0],
+                    })
+                }
+    
+                return feature.signAndExecuteTransaction({
+                    transaction,
+                    account: signerAccount,
+                    chain: chain ?? signerAccount.chains[0],
+                })
             }
-
-            const signerAccount = account ?? globalState.currentAccount.value
-            if (!signerAccount) {
-                throw new Error('No wallet account is selected to sign the personal message with.')
-            }
-
-            const feature = globalState.currentWallet.features['sui:signAndExecuteTransaction']
-            if (!feature) {
-                throw new Error("This wallet doesn't support the `signAndExecuteTransactionBlock` feature.")
-            }
-
-            return feature.signAndExecuteTransaction({
-                transaction,
-                account: signerAccount,
-                chain: chain ?? signerAccount.chains[0],
-            })
-        }
 
     return { signAndExecuteTransaction }
 }
