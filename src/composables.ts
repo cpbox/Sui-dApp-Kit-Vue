@@ -58,7 +58,7 @@ const useGlobalState = createGlobalState(() => {
             disconnect: 'Disconnect'
         }),
         connectDialogText: reactive({
-            connectWallet: 'Connect a Wallet',
+            connectWallet: 'Connect Sui Wallet',
             noWallet: 'Get Started with Sui',
         }),
         // wallet state
