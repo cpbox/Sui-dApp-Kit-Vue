@@ -12,7 +12,8 @@ import {
     SignedTransaction,
     SuiSignAndExecuteTransactionInput,
     SuiSignAndExecuteTransactionOutput,
-    SuiSignAndExecuteTransactionBlockOutput
+    SuiSignAndExecuteTransactionBlockOutput,
+    SuiSignTransactionBlockOutput
 } from '@mysten/wallet-standard'
 import { ZKSEND_WALLET_NAME } from '@mysten/zksend'
 import { createGlobalState, useStorage } from '@vueuse/core'
@@ -191,7 +192,7 @@ export const useSignPersonalMessage = () => {
 
 export const useSignTransactionBlock = () => {
 
-    const signTransactionBlock: (args: SignTransactionArgs) => Promise<SignedTransaction> =
+    const signTransactionBlock: (args: SignTransactionArgs) => Promise<SignedTransaction | SuiSignTransactionBlockOutput> =
         ({ transaction, account, chain }) => {
             if (!globalState.currentWallet) {
                 throw new Error('No wallet is connected.')
@@ -204,7 +205,15 @@ export const useSignTransactionBlock = () => {
 
             const feature = globalState.currentWallet.features['sui:signTransaction']
             if (!feature) {
-                throw new Error("This wallet doesn't support the `SignTransactionBlock` feature.")
+                const feature2 = globalState.currentWallet.features['sui:signTransactionBlock']
+                if (!feature2) {
+                    throw new Error("This wallet doesn't support the `signTransaction | signTransactionBlock` feature.")
+                }
+                return feature2.signTransactionBlock({
+                    transactionBlock: transaction,
+                    account: signerAccount,
+                    chain: chain ?? signerAccount.chains[0],
+                })
             }
 
             return feature.signTransaction({
@@ -234,7 +243,7 @@ export const useSignAndExecuteTransactionBlock = () => {
                 if (!feature) {
                     const feature2 = globalState.currentWallet.features['sui:signAndExecuteTransactionBlock']
                     if (!feature2) {
-                        throw new Error("This wallet doesn't support the `signAndExecuteTransactionBlock` feature.")
+                        throw new Error("This wallet doesn't support the `signAndExecuteTransaction | signAndExecuteTransactionBlock` feature.")
                     }
                     return feature2.signAndExecuteTransactionBlock({
                         transactionBlock: transaction,
