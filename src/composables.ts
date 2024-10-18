@@ -1,4 +1,4 @@
-import { reactive, ref, Ref } from 'vue'
+import { reactive, ref, shallowRef, Ref, ShallowRef } from 'vue'
 import {
     getWallets,
     WalletAccount,
@@ -44,8 +44,8 @@ interface GlobalState {
     },
     currentWallet: WalletWithRequiredFeatures | undefined;
     currentWalletStatus: Ref<"connecting" | "connected" | "disconnected" | undefined>;
-    currentAccount: Ref<WalletAccount | undefined>;
-    accounts: Ref<readonly WalletAccount[] | undefined>;
+    currentAccount: ShallowRef<WalletAccount | undefined>;
+    accounts: ShallowRef<readonly WalletAccount[] | undefined>;
 }
 const useGlobalState = createGlobalState(() => {
     const state = {
@@ -64,8 +64,8 @@ const useGlobalState = createGlobalState(() => {
         // wallet state
         currentWallet: undefined,
         currentWalletStatus: ref(),
-        currentAccount: ref<WalletAccount>(),
-        accounts: ref<readonly WalletAccount[]>()
+        currentAccount: shallowRef<WalletAccount>(),
+        accounts: shallowRef<readonly WalletAccount[]>()
     } as GlobalState
     return state
 })
